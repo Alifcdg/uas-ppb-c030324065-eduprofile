@@ -1,0 +1,16 @@
+# Laravel
+uas-ppb-c030324065-backend/vendor/
+uas-ppb-c030324065-backend/node_modules/
+uas-ppb-c030324065-backend/.env
+
+# Flutter
+uas-ppb-c030324065-mobile/.dart_tool/
+uas-ppb-c030324065-mobile/build/
+uas-ppb-c030324065-mobile/.flutter-plugins
+uas-ppb-c030324065-mobile/.flutter-plugins-dependencies
+
+# VSCode
+.vscode/
+
+# Windows
+Thumbs.db
