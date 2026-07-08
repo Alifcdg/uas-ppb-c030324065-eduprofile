@@ -87,12 +87,65 @@ class MahasiswaController extends Controller
     }
 
     public function update(UpdateMahasiswaRequest $request, Mahasiswa $mahasiswa)
-    {
-        //
-    }
+{
+    $mahasiswa->user->update([
+        'name' => $request->nama,
+        'email' => $request->email,
+    ]);
+
+    $mahasiswa->update([
+        'nim' => $request->nim,
+        'program_studi_id' => $request->program_studi_id,
+        'tanggal_lahir' => $request->tanggal_lahir,
+        'jenis_kelamin' => $request->jenis_kelamin,
+        'alamat' => $request->alamat,
+        'no_hp' => $request->no_hp,
+        'angkatan_id' => $request->angkatan_id,
+        'hobby_id' => $request->hobby_id,
+    ]);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Mahasiswa berhasil diperbarui.',
+        'data' => new MahasiswaResource(
+            $mahasiswa->load([
+                'user',
+                'programStudi',
+                'angkatan',
+                'hobby',
+            ])
+        ),
+    ]);
+}
 
     public function destroy(Mahasiswa $mahasiswa)
-    {
-        //
+{
+    DB::beginTransaction();
+
+    try {
+
+        $user = $mahasiswa->user;
+
+        $mahasiswa->delete();
+
+        $user->delete();
+
+        DB::commit();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Mahasiswa berhasil dihapus.'
+        ]);
+
+    } catch (\Exception $e) {
+
+        DB::rollBack();
+
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage()
+        ], 500);
+
     }
+}
 }

@@ -17,8 +17,7 @@ class UpdateMahasiswaRequest extends FormRequest
         $mahasiswa = $this->route('mahasiswa');
 
         return [
-
-            'name' => 'required|string|max:100',
+            'nama' => 'required|string|max:255',
 
             'email' => [
                 'required',
@@ -32,20 +31,12 @@ class UpdateMahasiswaRequest extends FormRequest
             ],
 
             'program_studi_id' => 'required|exists:program_studis,id',
-
             'tanggal_lahir' => 'required|date',
-
             'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
-
             'alamat' => 'required|string',
-
             'no_hp' => 'required|string|max:20',
-
             'angkatan_id' => 'required|exists:angkatans,id',
-
             'hobby_id' => 'required|exists:hobbies,id',
-
-            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ];
     }
 }
