@@ -37,6 +37,7 @@ class UpdateMahasiswaRequest extends FormRequest
             'no_hp' => 'required|string|max:20',
             'angkatan_id' => 'required|exists:angkatans,id',
             'hobby_id' => 'required|exists:hobbies,id',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ];
     }
 }

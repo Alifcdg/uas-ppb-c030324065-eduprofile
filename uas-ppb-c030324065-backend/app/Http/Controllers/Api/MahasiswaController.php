@@ -8,26 +8,45 @@ use App\Http\Requests\UpdateMahasiswaRequest;
 use App\Http\Resources\MahasiswaResource;
 use App\Models\Mahasiswa;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class MahasiswaController extends Controller
 {
-    public function index()
-    {
-        $mahasiswa = Mahasiswa::with([
-            'user',
-            'programStudi',
-            'angkatan',
-            'hobby'
-        ])->latest()->get();
+    public function index(Request $request)
+{
+    $search = $request->search;
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Data mahasiswa berhasil diambil.',
-            'data' => MahasiswaResource::collection($mahasiswa)
-        ]);
-    }
+    $mahasiswa = Mahasiswa::with([
+        'user',
+        'programStudi',
+        'angkatan',
+        'hobby'
+    ])
+    ->when($search, function ($query) use ($search) {
+        $query->where('nim', 'like', "%{$search}%")
+              ->orWhereHas('user', function ($q) use ($search) {
+                  $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+              });
+    })
+    ->latest()
+    ->paginate(10);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Data mahasiswa berhasil diambil.',
+        'data' => MahasiswaResource::collection($mahasiswa),
+        'pagination' => [
+            'current_page' => $mahasiswa->currentPage(),
+            'last_page' => $mahasiswa->lastPage(),
+            'per_page' => $mahasiswa->perPage(),
+            'total' => $mahasiswa->total(),
+        ]
+    ]);
+}
 
     public function store(StoreMahasiswaRequest $request)
     {
@@ -36,11 +55,17 @@ class MahasiswaController extends Controller
         try {
 
             $user = User::create([
-                'name' => $request->name,
+                'name' => $request->nama,
                 'email' => $request->email,
                 'password' => Hash::make($request->nim),
                 'role' => 'Mahasiswa'
             ]);
+
+            $fotoPath = null;
+
+if ($request->hasFile('foto')) {
+    $fotoPath = $request->file('foto')->store('mahasiswa', 'public');
+}
 
             $mahasiswa = Mahasiswa::create([
                 'user_id' => $user->id,
@@ -52,6 +77,7 @@ class MahasiswaController extends Controller
                 'no_hp' => $request->no_hp,
                 'angkatan_id' => $request->angkatan_id,
                 'hobby_id' => $request->hobby_id,
+                'foto' => $fotoPath,
             ]);
 
             DB::commit();
@@ -93,6 +119,17 @@ class MahasiswaController extends Controller
         'email' => $request->email,
     ]);
 
+    $fotoPath = $mahasiswa->foto;
+
+if ($request->hasFile('foto')) {
+
+    if ($mahasiswa->foto && Storage::disk('public')->exists($mahasiswa->foto)) {
+        Storage::disk('public')->delete($mahasiswa->foto);
+    }
+
+    $fotoPath = $request->file('foto')->store('mahasiswa', 'public');
+}
+
     $mahasiswa->update([
         'nim' => $request->nim,
         'program_studi_id' => $request->program_studi_id,
@@ -102,6 +139,7 @@ class MahasiswaController extends Controller
         'no_hp' => $request->no_hp,
         'angkatan_id' => $request->angkatan_id,
         'hobby_id' => $request->hobby_id,
+        'foto' => $fotoPath,
     ]);
 
     return response()->json([
@@ -125,6 +163,10 @@ class MahasiswaController extends Controller
     try {
 
         $user = $mahasiswa->user;
+
+        if ($mahasiswa->foto && Storage::disk('public')->exists($mahasiswa->foto)) {
+    Storage::disk('public')->delete($mahasiswa->foto);
+}
 
         $mahasiswa->delete();
 

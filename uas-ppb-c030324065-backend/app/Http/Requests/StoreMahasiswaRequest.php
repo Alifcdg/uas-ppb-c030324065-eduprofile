@@ -16,7 +16,7 @@ class StoreMahasiswaRequest extends FormRequest
         return [
 
             // USERS
-            'name' => 'required|string|max:100',
+            'nama' => 'required|string|max:100',
 
             'email' => 'required|email|unique:users,email',
 
