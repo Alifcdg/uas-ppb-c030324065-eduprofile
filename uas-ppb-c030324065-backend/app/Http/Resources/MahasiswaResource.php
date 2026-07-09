@@ -28,8 +28,8 @@ class MahasiswaResource extends JsonResource
             'no_hp' => $this->no_hp,
 
             'foto' => $this->foto
-                ? asset('storage/' . $this->foto)
-                : null,
+    ? asset('storage/' . $this->foto)
+    : null,
 
             'program_studi' => $this->programStudi,
 
